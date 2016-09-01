@@ -123,17 +123,6 @@ def disparity_filter_alpha_cut(G,weight='weight',alpha_t=0.4, cut_mode='or'):
                 alpha = 1
                 
             if alpha<alpha_t:
-                B.add_edge(u,v, weight=w[weight])
+                B.add_edge(u,v, weight=w['weight'])
         return B                
             
-if __name__ == '__main__':
-    G = nx.barabasi_albert_graph(1000, 5)
-    for u, v in G.edges():
-        G[u][v]['weight'] = np.random.randint(1,100)
-    alpha = 0.05
-    G = disparity_filter(G)
-    G2 = nx.Graph([(u, v, d) for u, v, d in G.edges(data=True) if d['alpha'] < alpha])
-    print 'alpha = %s' % alpha
-    print 'original: nodes = %s, edges = %s' % (G.number_of_nodes(), G.number_of_edges())
-    print 'backbone: nodes = %s, edges = %s' % (G2.number_of_nodes(), G2.number_of_edges())
-    print G2.edges(data=True)
