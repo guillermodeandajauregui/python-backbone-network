@@ -5,7 +5,7 @@ import pandas as pd
 
 ###Function taken from aekpalakorn
 
-def disparity_filter(G, weight='weight'):
+def disparity_filter_directed(G, weight='weight'):
     ''' Compute significance scores (alpha) for weighted edges in G as defined in Serrano et al. 2009
         Args
             G: Weighted NetworkX graph
@@ -46,17 +46,28 @@ def disparity_filter(G, weight='weight'):
                     N.add_edge(v, u, weight = w, alpha_in=float('%.4f' % alpha_ij_in))
         return N
     
-    else: #undirected case
+def disparity_filter_undirected(G, weight='weight', threshold=0.4):
+        ''' Compute significance scores (alpha) for weighted edges in G as defined in Serrano et al. 2009
+        Args
+            G: Weighted NetworkX graph
+        Returns
+            Weighted graph with a significance score (alpha) assigned to each edge
+        References
+            M. A. Serrano et al. (2009) Extracting the Multiscale backbone of complex weighted networks. PNAS, 106:16, pp. 6483-6488.
+        '''
         B = nx.Graph()
         for u in G:
             k = len(G[u])
-            if k > 1:
-                sum_w = sum(np.absolute(G[u][v][weight]) for v in G[u])
+            #if k == 1:
+                #B.add_edge(u, v, weight = w)
+            elif k > 1:
+                s = sum(np.absolute(G[u][v][weight]) for v in G[u])
                 for v in G[u]:
-                    w = G[u][v][weight]
-                    p_ij = float(np.absolute(w))/sum_w
+                    w = float(np.absolute(G[u][v][weight]))
+                    p_ij = w / s
                     alpha_ij = 1 - (k-1) * integrate.quad(lambda x: (1-x)**(k-2), 0, p_ij)[0]
-                    B.add_edge(u, v, weight = w, alpha=float('%.4f' % alpha_ij))
+                    if alpha_ij < threshold:
+                        B.add_edge(u, v, weight = w)
         return B
 
 def disparity_filter_alpha_cut(G,weight='weight',alpha_t=0.4, cut_mode='or'):
